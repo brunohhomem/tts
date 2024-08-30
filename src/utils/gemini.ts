@@ -3,7 +3,8 @@ import { MeasureType } from '@prisma/client';
 // import fs from 'fs';
 
 // Access your API key as an environment variable (see "Set up your API key" above)
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // // Converts local file information to a GoogleGenerativeAI.Part object.
 // function fileToGenerativePart(path, mimeType) {
@@ -19,10 +20,8 @@ export async function runGemini(type: MeasureType, image: string) {
   // The Gemini 1.5 models are versatile and work with both text-only and multimodal prompts
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-  const prompt =
-    'Please read the ' +
-    type +
-    ' meter reading from this image, just the numbers. If its not a meter, return null';
+  const prompt = 'Decode this base64 and describe it';
+  // 'Please read the type meter base64, just the numbers. If its not a meter, return null';
 
   // const imageParts = [
   //   fileToGenerativePart('image1.png', 'image/png'),
@@ -32,6 +31,24 @@ export async function runGemini(type: MeasureType, image: string) {
   const result = await model.generateContent([prompt, image]);
   const response = await result.response;
   const text = response.text();
-  console.log(text);
-  return text;
+  console.log('the api result: ' + text);
+
+  const value = extractNumberFromResponse(text);
+
+  return value;
+}
+
+function extractNumberFromResponse(response: string): number | null {
+  const match = response.match(/\d+/);
+  return match ? parseInt(match[0]) : null;
+}
+
+// Example usage:
+const response = 'The large number in the center of the image is **1014**.';
+const number = extractNumberFromResponse(response);
+
+if (number !== null) {
+  console.log('Extracted number:', number);
+} else {
+  console.log('Number not found in response');
 }
