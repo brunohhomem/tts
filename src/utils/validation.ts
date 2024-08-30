@@ -1,7 +1,14 @@
 import { MeasureType, PrismaClient } from '@prisma/client';
 import { CustomError } from './customError';
+import { CreateMeasure } from 'src/types';
 
 const prisma = new PrismaClient();
+
+export function hasData(data: CreateMeasure): void {
+  if (!data) {
+    throw new CustomError(400, 'INVALID_DATA', 'Body vazio');
+  }
+}
 
 export function isUUID(id: string): void {
   const uuidRegex =
@@ -16,13 +23,18 @@ export function isUUID(id: string): void {
   }
 }
 
-export async function validateMonth(id: string, inputDate: Date) {
+export async function validateMonth(
+  id: string,
+  type: MeasureType,
+  inputDate: Date,
+) {
   const month = inputDate.getMonth();
   const year = inputDate.getFullYear();
 
   const existingMeasurement = await prisma.measure.findFirst({
     where: {
       customer_code: id,
+      measure_type: type,
       measure_datetime: {
         gte: new Date(year, month - 1, 1), // Início do mês
         lt: new Date(year, month, 1), // Início do próximo mês
@@ -34,7 +46,7 @@ export async function validateMonth(id: string, inputDate: Date) {
     throw new CustomError(
       409,
       'DOUBLE_REPORT',
-      'O ID já possui uma medida para o mês e ano especificados.',
+      'Já existe uma medida de ' + type + ' nesse mês e ano',
     );
   }
 }
@@ -66,6 +78,8 @@ export function validateType(type: string): void {
 }
 
 export function isMeter(value: string): void {
+  console.log(value);
+
   const num = Number(value);
   if (!isNaN(num) && isFinite(num)) {
     throw new CustomError(
@@ -74,4 +88,13 @@ export function isMeter(value: string): void {
       'Por favor, forneça a imagem de um medidor da gás ou água válido.',
     );
   }
+}
+
+export function getImageURL(
+  image: string,
+  mimeType: string = 'image/jpeg',
+): string {
+  isBase64(image);
+
+  return `data:${mimeType};base64,${image}`;
 }
