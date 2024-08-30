@@ -13,10 +13,16 @@ export interface MeasureProps {
 
 export interface CreateMeasure {
   // image: string | File;
-  image: string;
+  image?: string;
   customer_code: string;
   measure_datetime: Date;
   measure_type: MeasureType; // Enum: "WATER" ou "GAS"
+}
+
+export interface MeasureResponse {
+  measure_uuid: string;
+  measure_value: number;
+  image_url: string;
 }
 
 export interface ConfirmMeasure {

@@ -11,7 +11,7 @@ model Customer {
   customer_code String    @id @default(uuid())
   measures      Measure[]
 
-  @@map("customers") // Nome da tabela no PostgreSQL
+  @@map("customers")
 }
 
 model Measure {
@@ -26,7 +26,7 @@ model Measure {
 
   customer Customer @relation(fields: [customer_code], references: [customer_code])
 
-  @@map("measures") // Nome da tabela no PostgreSQL
+  @@map("measures")
 }
 
 enum MeasureType {
