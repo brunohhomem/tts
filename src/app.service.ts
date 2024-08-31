@@ -9,7 +9,7 @@ import {
   validateMonth,
   validateType,
 } from './utils/validation';
-import { runGemini } from './utils/gemini';
+import { textGenMultimodalOneImagePrompt } from './utils/gemini';
 
 @Injectable()
 export class AppService {
@@ -17,7 +17,7 @@ export class AppService {
 
   async createMeasure(data: CreateMeasure): Promise<MeasureResponse> {
     hasData(data);
-    isBase64(data.image);
+    // isBase64(data.image);
     isUUID(data.customer_code);
 
     const insertDate = new Date(data.measure_datetime);
@@ -25,7 +25,15 @@ export class AppService {
     validateMonth(data.customer_code, data.measure_type, insertDate);
     validateType(data.measure_type);
 
-    const geminiResult = runGemini(data.measure_type, data.image);
+    const base64Image = data.image;
+    const mimeType = 'image/jpeg'; // Tipo MIME da imagem
+    const prompt = 'What is the measure from the meter?, only numbers'; // Prompt para o modelo
+
+    const geminiResult = await textGenMultimodalOneImagePrompt(
+      base64Image,
+      mimeType,
+      prompt,
+    );
     // isMeter(await geminiResult);
     // const numberResult = Number(geminiResult);
 
